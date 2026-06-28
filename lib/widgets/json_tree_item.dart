@@ -26,7 +26,7 @@ class _JsonTreeItemState extends State<JsonTreeItem> with SingleTickerProviderSt
     );
     _sizeAnimation = CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeInOut,
+      curve: Curves.fastOutSlowIn, // Smoother, more natural curve
     );
 
     if (widget.node.wasJustAdded) {

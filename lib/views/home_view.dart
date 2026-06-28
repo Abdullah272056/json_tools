@@ -148,13 +148,13 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                         child: SizedBox(
                           width: 2000,
                           child: ListView.builder(
-                            key: ValueKey(controller.flattenedNodes.length), // Refresh when count changes
                             controller: controller.treeScrollController,
                             itemCount: controller.flattenedNodes.length,
                             itemBuilder: (context, index) {
+                              final node = controller.flattenedNodes[index];
                               return JsonTreeItem(
-                                key: ValueKey(controller.flattenedNodes[index]), 
-                                node: controller.flattenedNodes[index]
+                                key: ObjectKey(node), 
+                                node: node,
                               );
                             },
                           ),
