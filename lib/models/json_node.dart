@@ -8,6 +8,9 @@ class JsonNode {
   bool isExpanded;
   List<JsonNode> children;
   final JsonNode? parent;
+  
+  bool wasJustAdded; 
+  bool isCollapsing; // New flag for smooth collapse
 
   JsonNode({
     required this.key,
@@ -17,13 +20,9 @@ class JsonNode {
     this.isExpanded = false,
     this.children = const [],
     this.parent,
+    this.wasJustAdded = false,
+    this.isCollapsing = false,
   });
 
   bool get isExpandable => type == JsonNodeType.object || type == JsonNodeType.array;
-
-  String get valueString {
-    if (type == JsonNodeType.object) return 'Object {${children.length}}';
-    if (type == JsonNodeType.array) return 'Array [${children.length}]';
-    return value.toString();
-  }
 }

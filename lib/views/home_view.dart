@@ -18,15 +18,8 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin {
   final controller = Get.put(JsonController());
-  late TabController _tabController;
   final ScrollController _treeHorizontalScrollController = ScrollController();
   final ScrollController _tableHorizontalScrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
 
   @override
   void dispose() {
@@ -58,13 +51,24 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
           const Toolbar(),
           _buildTabHeader(),
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildTreeView(),
-                _buildEditor(),
-              ],
-            ),
+            child: Obx(() => AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.02, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                );
+              },
+              child: controller.currentTabIndex.value == 0 
+                  ? _buildTreeView() 
+                  : _buildEditor(),
+            )),
           ),
           const StatusBar(),
         ],
@@ -79,17 +83,13 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
         children: [
           _TabButton(
             title: 'Viewer',
-            isSelected: true,
-            onTap: () => _tabController.animateTo(0),
-            controller: _tabController,
             index: 0,
+            onTap: () => controller.currentTabIndex.value = 0,
           ),
           _TabButton(
             title: 'Text',
-            isSelected: false,
-            onTap: () => _tabController.animateTo(1),
-            controller: _tabController,
             index: 1,
+            onTap: () => controller.currentTabIndex.value = 1,
           ),
         ],
       ),
@@ -97,95 +97,99 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
   }
 
   Widget _buildEditor() {
-    return Obx(() => Container(
+    return Container(
+      key: const ValueKey('EditorView'),
       color: Colors.white,
       child: CodeTheme(
         data: CodeThemeData(styles: controller.isDarkMode.value ? monokaiSublimeTheme : githubTheme),
         child: SingleChildScrollView(
           child: CodeField(
             controller: controller.codeController,
-            textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 14),
+            textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 14, fontWeight: FontWeight.bold),
             minLines: 40,
           ),
         ),
       ),
-    ));
+    );
   }
 
   double _viewerSplitRatio = 4 / 7;
 
   Widget _buildTreeView() {
-    return Obx(() {
-      if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      
-      if (controller.flattenedNodes.isEmpty) {
-        return const Center(
-          child: Text('Enter valid JSON to see the tree view'),
-        );
-      }
+    return Container(
+      key: const ValueKey('TreeView'),
+      child: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        
+        if (controller.flattenedNodes.isEmpty) {
+          return const Center(
+            child: Text('Enter valid JSON to see the tree view'),
+          );
+        }
 
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          final double treeWidth = constraints.maxWidth * _viewerSplitRatio;
-          return Row(
-            children: [
-              SizedBox(
-                width: treeWidth,
-                child: Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Scrollbar(
-                    controller: _treeHorizontalScrollController,
-                    thumbVisibility: true,
-                    child: SingleChildScrollView(
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final double treeWidth = constraints.maxWidth * _viewerSplitRatio;
+            return Row(
+              children: [
+                SizedBox(
+                  width: treeWidth,
+                  child: Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Scrollbar(
                       controller: _treeHorizontalScrollController,
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        width: 2000,
-                        child: AnimatedList(
-                          key: controller.treeListKey,
-                          controller: controller.treeScrollController,
-                          initialItemCount: controller.flattenedNodes.length,
-                          itemBuilder: (context, index, animation) {
-                            return SizeTransition(
-                              sizeFactor: animation,
-                              child: JsonTreeItem(node: controller.flattenedNodes[index]),
-                            );
-                          },
+                      thumbVisibility: true,
+                      child: SingleChildScrollView(
+                        controller: _treeHorizontalScrollController,
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: 2000,
+                          child: ListView.builder(
+                            key: ValueKey(controller.flattenedNodes.length), // Refresh when count changes
+                            controller: controller.treeScrollController,
+                            itemCount: controller.flattenedNodes.length,
+                            itemBuilder: (context, index) {
+                              return JsonTreeItem(
+                                key: ValueKey(controller.flattenedNodes[index]), 
+                                node: controller.flattenedNodes[index]
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              MouseRegion(
-                cursor: SystemMouseCursors.resizeLeftRight,
-                child: GestureDetector(
-                  onHorizontalDragUpdate: (details) {
-                    setState(() {
-                      _viewerSplitRatio += details.delta.dx / constraints.maxWidth;
-                      _viewerSplitRatio = _viewerSplitRatio.clamp(0.2, 0.8);
-                    });
-                  },
-                  child: Container(
-                    width: 6,
-                    color: Colors.grey.shade300,
-                    child: const Center(
-                      child: Icon(Icons.drag_indicator, size: 12, color: Colors.grey),
+                MouseRegion(
+                  cursor: SystemMouseCursors.resizeLeftRight,
+                  child: GestureDetector(
+                    onHorizontalDragUpdate: (details) {
+                      setState(() {
+                        _viewerSplitRatio += details.delta.dx / constraints.maxWidth;
+                        _viewerSplitRatio = _viewerSplitRatio.clamp(0.2, 0.8);
+                      });
+                    },
+                    child: Container(
+                      width: 6,
+                      color: Colors.grey.shade300,
+                      child: const Center(
+                        child: Icon(Icons.drag_indicator, size: 12, color: Colors.grey),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: _buildDetailTable(),
-              ),
-            ],
-          );
-        },
-      );
-    });
+                Expanded(
+                  child: _buildDetailTable(),
+                ),
+              ],
+            );
+          },
+        );
+      }),
+    );
   }
 
   Widget _buildDetailTable() {
@@ -298,47 +302,41 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
 
 class _TabButton extends StatelessWidget {
   final String title;
-  final bool isSelected;
   final VoidCallback onTap;
-  final TabController controller;
   final int index;
 
   const _TabButton({
     required this.title,
-    required this.isSelected,
     required this.onTap,
-    required this.controller,
     required this.index,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) {
-        final bool active = controller.index == index;
-        return InkWell(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            decoration: BoxDecoration(
-              color: active ? Colors.white : Colors.transparent,
-              border: Border(
-                top: BorderSide(color: active ? Colors.grey : Colors.transparent),
-                left: BorderSide(color: active ? Colors.grey : Colors.transparent),
-                right: BorderSide(color: active ? Colors.grey : Colors.transparent),
-              ),
-            ),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontWeight: active ? FontWeight.bold : FontWeight.normal,
-                color: Colors.black,
-              ),
+    final controller = Get.find<JsonController>();
+    return Obx(() {
+      final bool active = controller.currentTabIndex.value == index;
+      return InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+          decoration: BoxDecoration(
+            color: active ? Colors.white : Colors.transparent,
+            border: Border(
+              top: BorderSide(color: active ? Colors.grey : Colors.transparent),
+              left: BorderSide(color: active ? Colors.grey : Colors.transparent),
+              right: BorderSide(color: active ? Colors.grey : Colors.transparent),
             ),
           ),
-        );
-      },
-    );
+          child: Text(
+            title,
+            style: TextStyle(
+              fontWeight: active ? FontWeight.bold : FontWeight.normal,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      );
+    });
   }
 }

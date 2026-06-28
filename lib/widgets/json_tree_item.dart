@@ -4,84 +4,137 @@ import '../models/json_node.dart';
 import '../controllers/json_controller.dart';
 import '../utils/app_theme.dart';
 
-class JsonTreeItem extends StatelessWidget {
+class JsonTreeItem extends StatefulWidget {
   final JsonNode node;
 
   const JsonTreeItem({super.key, required this.node});
 
   @override
+  State<JsonTreeItem> createState() => _JsonTreeItemState();
+}
+
+class _JsonTreeItemState extends State<JsonTreeItem> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _sizeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+    );
+    _sizeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+
+    if (widget.node.wasJustAdded) {
+      _animationController.forward();
+      widget.node.wasJustAdded = false;
+    } else {
+      _animationController.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(JsonTreeItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.node.isCollapsing) {
+      _animationController.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final controller = Get.find<JsonController>();
     
-    return Obx(() {
-      final isCurrentMatch = controller.searchResults.isNotEmpty &&
-          controller.currentSearchIndex.value >= 0 &&
-          controller.currentSearchIndex.value < controller.searchResults.length &&
-          controller.searchResults[controller.currentSearchIndex.value] == node;
+    return SizeTransition(
+      sizeFactor: _sizeAnimation,
+      axisAlignment: -1.0,
+      child: Obx(() {
+        final node = widget.node;
+        final isCurrentMatch = controller.searchQuery.isNotEmpty &&
+            (node.key.toString().toLowerCase().contains(controller.searchQuery.value.toLowerCase()) ||
+                (node.type != JsonNodeType.object &&
+                    node.type != JsonNodeType.array &&
+                    node.value.toString().toLowerCase().contains(controller.searchQuery.value.toLowerCase())));
+        
+        final isSelected = controller.selectedNode.value == node;
 
-      final isSelected = controller.selectedNode.value == node;
+        final fontSize = controller.treeFontSize.value;
+        final iconSize = fontSize * 0.75;
+        final rowHeight = fontSize * 1.7;
 
-      final fontSize = controller.treeFontSize.value;
-      final iconSize = fontSize * 0.75;
-      final rowHeight = fontSize * 1.7;
-
-      return InkWell(
-        onTap: () => controller.selectNode(node),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isSelected 
-                ? Colors.blue.withOpacity(0.2) 
-                : (isCurrentMatch ? Colors.blue.withOpacity(0.1) : null),
-          ),
-          padding: EdgeInsets.only(left: (node.depth * (fontSize * 1.4)) + 8.0),
-          height: rowHeight,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              for (int i = 1; i <= node.depth; i++)
-                Positioned(
-                  left: (i * (fontSize * 1.4)) - (node.depth * (fontSize * 1.4)) - (fontSize * 1.2),
-                  top: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 1,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        left: BorderSide(
-                          color: Colors.grey.shade300,
-                          width: 1,
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => controller.selectNode(node),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: isSelected 
+                  ? Colors.blue.withOpacity(0.15) 
+                  : (isCurrentMatch ? Colors.orange.withOpacity(0.2) : null),
+              border: isSelected ? Border(left: BorderSide(color: Colors.blue.shade700, width: 3)) : null,
+            ),
+            padding: EdgeInsets.only(left: (node.depth * (fontSize * 1.4)) + (isSelected ? 5.0 : 8.0)),
+            height: rowHeight,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                for (int i = 1; i <= node.depth; i++)
+                  Positioned(
+                    left: (i * (fontSize * 1.4)) - (node.depth * (fontSize * 1.4)) - (fontSize * 1.2),
+                    top: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 1,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          left: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildExpandIcon(iconSize, controller),
-                  SizedBox(width: fontSize * 0.6),
-                  _buildTypeIcon(fontSize, iconSize),
-                  SizedBox(width: fontSize * 0.8),
-                  _buildKey(fontSize),
-                  if (node.type != JsonNodeType.object && node.type != JsonNodeType.array) ...[
-                    Text(' : ', style: TextStyle(color: Colors.black, fontSize: fontSize, fontWeight: FontWeight.bold)),
-                    _buildValue(fontSize),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildExpandIcon(iconSize, controller),
+                    SizedBox(width: fontSize * 0.6),
+                    _buildTypeIcon(fontSize, iconSize),
+                    SizedBox(width: fontSize * 0.8),
+                    _buildKey(fontSize),
+                    if (node.type != JsonNodeType.object && node.type != JsonNodeType.array) ...[
+                      Text(' : ', style: TextStyle(color: Colors.black, fontSize: fontSize, fontWeight: FontWeight.bold)),
+                      _buildValue(fontSize),
+                    ],
                   ],
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      }),
+    );
   }
 
   Widget _buildExpandIcon(double size, JsonController controller) {
-    if (!node.isExpandable) {
+    if (!widget.node.isExpandable || widget.node.children.isEmpty) {
       return SizedBox(width: size + 1);
     }
-    return InkWell(
-      onTap: () => controller.toggleNode(node),
+    return GestureDetector(
+      onTap: () {
+        controller.toggleNode(widget.node);
+      },
       child: Container(
         width: size + 1,
         height: size + 1,
@@ -95,8 +148,8 @@ class JsonTreeItem extends StatelessWidget {
             duration: const Duration(milliseconds: 150),
             transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
             child: Icon(
-              node.isExpanded ? Icons.remove : Icons.add,
-              key: ValueKey(node.isExpanded),
+              widget.node.isExpanded ? Icons.remove : Icons.add,
+              key: ValueKey(widget.node.isExpanded),
               size: size - 2.5,
               color: Colors.black,
             ),
@@ -107,6 +160,7 @@ class JsonTreeItem extends StatelessWidget {
   }
 
   Widget _buildTypeIcon(double fontSize, double iconSize) {
+    final node = widget.node;
     if (node.type == JsonNodeType.object) {
       return Text(
         '{ }',
@@ -152,7 +206,7 @@ class JsonTreeItem extends StatelessWidget {
 
   Widget _buildKey(double fontSize) {
     return Text(
-      node.key.toString(),
+      widget.node.key.toString(),
       style: TextStyle(
         color: Colors.black,
         fontSize: fontSize,
@@ -163,10 +217,10 @@ class JsonTreeItem extends StatelessWidget {
   }
 
   Widget _buildValue(double fontSize) {
-    String displayValue = node.value.toString();
-    if (node.type == JsonNodeType.string) {
+    String displayValue = widget.node.value.toString();
+    if (widget.node.type == JsonNodeType.string) {
       displayValue = '"$displayValue"';
-    } else if (node.type == JsonNodeType.nullValue) {
+    } else if (widget.node.type == JsonNodeType.nullValue) {
       displayValue = 'null';
     }
 

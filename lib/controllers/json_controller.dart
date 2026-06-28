@@ -28,6 +28,7 @@ class JsonController extends GetxController {
   var totalNodes = 0.obs;
   var jsonSize = '0 KB'.obs;
   var treeFontSize = 13.0.obs;
+  var currentTabIndex = 0.obs;
 
   var searchQuery = ''.obs;
   var searchResults = <JsonNode>[].obs;
@@ -35,7 +36,6 @@ class JsonController extends GetxController {
   var selectedNode = Rxn<JsonNode>();
   
   final ScrollController treeScrollController = ScrollController();
-  final GlobalKey<AnimatedListState> treeListKey = GlobalKey<AnimatedListState>();
 
   @override
   void onInit() {
@@ -113,65 +113,63 @@ class JsonController extends GetxController {
     flattenedNodes.assignAll(JsonService.flatten(rootNode.value!, onlyVisible: true));
   }
 
-  void toggleNode(JsonNode node) {
+  void toggleNode(JsonNode node) async {
     final int index = flattenedNodes.indexOf(node);
     if (index == -1) return;
 
     if (node.isExpanded) {
-      // Collapse
-      final List<JsonNode> toRemove = _getVisibleSubtree(node);
+      // Smooth Collapse
       node.isExpanded = false;
-      for (int i = 0; i < toRemove.length; i++) {
-        flattenedNodes.removeAt(index + 1);
-        treeListKey.currentState?.removeItem(
-          index + 1,
-          (context, animation) => const SizedBox.shrink(), // Immediate removal for collapse speed
-          duration: const Duration(milliseconds: 150),
-        );
+      int count = 0;
+      for (int i = index + 1; i < flattenedNodes.length; i++) {
+        if (flattenedNodes[i].depth > node.depth) {
+          flattenedNodes[i].isCollapsing = true;
+          count++;
+        } else {
+          break;
+        }
+      }
+      
+      flattenedNodes.refresh(); // Trigger animation in items
+      
+      // Wait for animation to finish before removing from list
+      await Future.delayed(const Duration(milliseconds: 150));
+      
+      if (count > 0) {
+        flattenedNodes.removeRange(index + 1, index + 1 + count);
       }
     } else {
-      // Expand
+      // Smooth Expand
       node.isExpanded = true;
-      final List<JsonNode> toInsert = _getVisibleSubtree(node);
-      for (int i = 0; i < toInsert.length; i++) {
-        flattenedNodes.insert(index + 1 + i, toInsert[i]);
-        treeListKey.currentState?.insertItem(
-          index + 1 + i,
-          duration: const Duration(milliseconds: 200),
-        );
+      List<JsonNode> toAdd = [];
+      _getVisibleChildrenRecursive(node, toAdd);
+      if (toAdd.isNotEmpty) {
+        flattenedNodes.insertAll(index + 1, toAdd);
       }
     }
   }
 
-  List<JsonNode> _getVisibleSubtree(JsonNode node) {
-    List<JsonNode> result = [];
+  void _getVisibleChildrenRecursive(JsonNode node, List<JsonNode> result) {
     for (var child in node.children) {
+      child.wasJustAdded = true; 
+      child.isCollapsing = false;
       result.add(child);
       if (child.isExpanded) {
-        result.addAll(_getVisibleSubtree(child));
+        _getVisibleChildrenRecursive(child, result);
       }
     }
-    return result;
   }
 
   void expandAll() {
     if (rootNode.value == null) return;
     _setExpanded(rootNode.value!, true);
     _refreshFlattenedNodes();
-    // Reset the animated list
-    _reloadList();
   }
 
   void collapseAll() {
     if (rootNode.value == null) return;
     _setExpanded(rootNode.value!, false);
     _refreshFlattenedNodes();
-    _reloadList();
-  }
-
-  void _reloadList() {
-    // A trick to refresh the AnimatedList when bulk changes happen
-    // In a real app, you'd replace the AnimatedList or use a different approach for bulk
   }
 
   void _setExpanded(JsonNode node, bool expanded) {
@@ -299,14 +297,12 @@ class JsonController extends GetxController {
     _expandParents(node);
     _refreshFlattenedNodes();
     
-    // Logic to scroll to the node could be added here
     final flatIndex = flattenedNodes.indexOf(node);
     if (flatIndex != -1) {
-      // Small delay to allow UI to update
       Future.delayed(const Duration(milliseconds: 100), () {
         if (treeScrollController.hasClients) {
           treeScrollController.animateTo(
-            flatIndex * 30.0, // Assuming each row is ~30px
+            flatIndex * 30.0,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );

@@ -10,20 +10,20 @@ class StatusBar extends StatelessWidget {
     final controller = Get.find<JsonController>();
 
     return Container(
-      height: 30,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      constraints: const BoxConstraints(minHeight: 30),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
       ),
-      child: Obx(() => Row(
+      child: Obx(() => Wrap(
+        spacing: 20,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           _StatusItem(label: 'Keys', value: '${controller.totalKeys.value}'),
-          const VerticalDivider(width: 20),
           _StatusItem(label: 'Nodes', value: '${controller.totalNodes.value}'),
-          const VerticalDivider(width: 20),
           _StatusItem(label: 'Size', value: controller.jsonSize.value),
-          const Spacer(),
           if (controller.validationError.value != null)
             _ValidationStatus(
               isValid: false,
@@ -46,6 +46,7 @@ class _StatusItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text('$label: ', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
         Text(value, style: const TextStyle(fontSize: 12)),
@@ -63,6 +64,7 @@ class _ValidationStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           isValid ? Icons.check_circle : Icons.error,
