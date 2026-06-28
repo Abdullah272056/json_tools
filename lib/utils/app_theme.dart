@@ -14,15 +14,10 @@ class AppTheme {
     colorSchemeSeed: Colors.blue,
   );
 
-  // Classic JSON Viewer Colors - More vibrant
-  static const Color objectColor = Color(0xFF0000CD); // Medium Blue
-  static const Color arrayColor = Color(0xFF0000CD);  // Medium Blue
-  static const Color keyColor = Colors.black;
-  static const Color stringColor = Colors.black;
-  static const Color numberColor = Colors.black;
-  static const Color booleanColor = Colors.black;
-  static const Color nullColor = Colors.black;
-
+  // Classic JSON Viewer Colors - Vibrant for Icons
+  static const Color objectColor = Color(0xFF0000FF); // Blue
+  static const Color arrayColor = Color(0xFF0000FF);  // Blue
+  
   static const Color stringSquare = Color(0xFF3366FF); // Vibrant Blue square
   static const Color numberSquare = Color(0xFF28A745); // Vibrant Green square
   static const Color nullSquare = Color(0xFFDC3545);   // Vibrant Red square

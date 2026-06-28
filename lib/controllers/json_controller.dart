@@ -27,6 +27,7 @@ class JsonController extends GetxController {
   var totalKeys = 0.obs;
   var totalNodes = 0.obs;
   var jsonSize = '0 KB'.obs;
+  var treeFontSize = 13.0.obs;
 
   var searchQuery = ''.obs;
   var searchResults = <JsonNode>[].obs;
@@ -281,5 +282,12 @@ class JsonController extends GetxController {
   void toggleTheme() {
     isDarkMode.value = !isDarkMode.value;
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
+  }
+
+  void updateFontSize(double delta) {
+    double newSize = treeFontSize.value + delta;
+    if (newSize >= 8 && newSize <= 30) {
+      treeFontSize.value = newSize;
+    }
   }
 }

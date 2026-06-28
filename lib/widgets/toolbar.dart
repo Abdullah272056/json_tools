@@ -80,10 +80,39 @@ class Toolbar extends StatelessWidget {
               tooltip: 'Collapse all nodes',
             ),
             const VerticalDivider(width: 20),
+            _buildFontSizeControls(controller),
+            const VerticalDivider(width: 20),
             _buildSearchBox(controller),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFontSizeControls(JsonController controller) {
+    return Row(
+      children: [
+        const Icon(Icons.format_size, size: 18, color: Colors.blue),
+        const SizedBox(width: 4),
+        IconButton(
+          icon: const Icon(Icons.remove, size: 18),
+          onPressed: () => controller.updateFontSize(-1),
+          tooltip: 'Decrease Font Size',
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        Obx(() => Text(
+          controller.treeFontSize.value.toInt().toString(),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        )),
+        IconButton(
+          icon: const Icon(Icons.add, size: 18),
+          onPressed: () => controller.updateFontSize(1),
+          tooltip: 'Increase Font Size',
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+      ],
     );
   }
 

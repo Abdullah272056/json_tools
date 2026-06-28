@@ -19,21 +19,25 @@ class JsonTreeItem extends StatelessWidget {
           controller.currentSearchIndex.value < controller.searchResults.length &&
           controller.searchResults[controller.currentSearchIndex.value] == node;
 
+      final fontSize = controller.treeFontSize.value;
+      final iconSize = fontSize * 0.75; // Middle ground between 0.7 and 0.8
+      final rowHeight = fontSize * 1.7;
+
       return InkWell(
         onTap: node.isExpandable ? () => controller.toggleNode(node) : null,
         child: Container(
           decoration: BoxDecoration(
             color: isCurrentMatch ? Colors.blue.withOpacity(0.1) : null,
           ),
-          padding: EdgeInsets.only(left: (node.depth * 18.0) + 8.0),
-          height: 22,
+          padding: EdgeInsets.only(left: (node.depth * (fontSize * 1.4)) + 8.0),
+          height: rowHeight,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
               // Vertical lines for depth
               for (int i = 1; i <= node.depth; i++)
                 Positioned(
-                  left: (i * 18.0) - (node.depth * 18.0) - 15.0,
+                  left: (i * (fontSize * 1.4)) - (node.depth * (fontSize * 1.4)) - (fontSize * 1.2),
                   top: 0,
                   bottom: 0,
                   child: Container(
@@ -50,14 +54,14 @@ class JsonTreeItem extends StatelessWidget {
                 ),
               Row(
                 children: [
-                  _buildExpandIcon(),
-                  const SizedBox(width: 4),
-                  _buildTypeIcon(),
-                  const SizedBox(width: 6),
-                  _buildKey(),
+                  _buildExpandIcon(iconSize),
+                  SizedBox(width: fontSize * 0.6),
+                  _buildTypeIcon(fontSize, iconSize),
+                  SizedBox(width: fontSize * 0.8),
+                  _buildKey(fontSize),
                   if (node.type != JsonNodeType.object && node.type != JsonNodeType.array) ...[
-                    const Text(' : ', style: TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.bold)),
-                    _buildValue(),
+                    Text(' : ', style: TextStyle(color: Colors.black, fontSize: fontSize, fontWeight: FontWeight.bold)),
+                    _buildValue(fontSize),
                   ],
                 ],
               ),
@@ -68,46 +72,46 @@ class JsonTreeItem extends StatelessWidget {
     });
   }
 
-  Widget _buildExpandIcon() {
+  Widget _buildExpandIcon(double size) {
     if (!node.isExpandable) {
-      return const SizedBox(width: 12);
+      return SizedBox(width: size + 1);
     }
     return Container(
-      width: 12,
-      height: 12,
+      width: size + 1,
+      height: size + 1,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black54, width: 1.0),
+        border: Border.all(color: Colors.black, width: 1.2),
         color: Colors.white,
         borderRadius: BorderRadius.circular(1),
       ),
       child: Center(
         child: Icon(
           node.isExpanded ? Icons.remove : Icons.add,
-          size: 9,
+          size: size - 2.5,
           color: Colors.black,
         ),
       ),
     );
   }
 
-  Widget _buildTypeIcon() {
+  Widget _buildTypeIcon(double fontSize, double iconSize) {
     if (node.type == JsonNodeType.object) {
-      return const Text(
-        '{}',
+      return Text(
+        '{ }',
         style: TextStyle(
           color: AppTheme.objectColor,
-          fontWeight: FontWeight.bold,
-          fontSize: 15,
+          fontWeight: FontWeight.w900,
+          fontSize: fontSize + 2,
           fontFamily: 'monospace',
         ),
       );
     } else if (node.type == JsonNodeType.array) {
-      return const Text(
-        '[]',
+      return Text(
+        '[ ]',
         style: TextStyle(
           color: AppTheme.arrayColor,
-          fontWeight: FontWeight.bold,
-          fontSize: 15,
+          fontWeight: FontWeight.w900,
+          fontSize: fontSize + 2,
           fontFamily: 'monospace',
         ),
       );
@@ -124,8 +128,8 @@ class JsonTreeItem extends StatelessWidget {
           squareColor = AppTheme.stringSquare;
       }
       return Container(
-        width: 9,
-        height: 9,
+        width: iconSize - 2,
+        height: iconSize - 2,
         decoration: BoxDecoration(
           color: squareColor,
           borderRadius: BorderRadius.circular(1),
@@ -134,19 +138,19 @@ class JsonTreeItem extends StatelessWidget {
     }
   }
 
-  Widget _buildKey() {
+  Widget _buildKey(double fontSize) {
     return Text(
       node.key.toString(),
-      style: const TextStyle(
+      style: TextStyle(
         color: Colors.black,
-        fontSize: 13,
+        fontSize: fontSize,
         fontWeight: FontWeight.bold,
         fontFamily: 'monospace',
       ),
     );
   }
 
-  Widget _buildValue() {
+  Widget _buildValue(double fontSize) {
     String displayValue = node.value.toString();
     if (node.type == JsonNodeType.string) {
       displayValue = '"$displayValue"';
@@ -158,9 +162,9 @@ class JsonTreeItem extends StatelessWidget {
       child: Text(
         displayValue,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.black,
-          fontSize: 13,
+          fontSize: fontSize,
           fontWeight: FontWeight.bold,
           fontFamily: 'monospace',
         ),
