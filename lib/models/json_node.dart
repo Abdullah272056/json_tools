@@ -10,7 +10,8 @@ class JsonNode {
   final JsonNode? parent;
   
   bool wasJustAdded; 
-  bool isCollapsing; // New flag for smooth collapse
+  bool isCollapsing;
+  int dynamicDurationMs; // Dynamic duration based on sibling count
 
   JsonNode({
     required this.key,
@@ -22,6 +23,7 @@ class JsonNode {
     this.parent,
     this.wasJustAdded = false,
     this.isCollapsing = false,
+    this.dynamicDurationMs = 300,
   });
 
   bool get isExpandable => type == JsonNodeType.object || type == JsonNodeType.array;

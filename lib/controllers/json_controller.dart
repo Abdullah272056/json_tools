@@ -118,7 +118,6 @@ class JsonController extends GetxController {
     if (index == -1) return;
 
     if (node.isExpanded) {
-      // Smooth Collapse
       node.isExpanded = false;
       int count = 0;
       for (int i = index + 1; i < flattenedNodes.length; i++) {
@@ -130,19 +129,28 @@ class JsonController extends GetxController {
         }
       }
       
-      flattenedNodes.refresh(); // Trigger animation in items
-      
-      // Wait for animation to finish before removing from list
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Dynamic duration for boro objects
+      int duration = count > 100 ? 500 : 300;
+      for (int i = index + 1; i <= index + count; i++) {
+        flattenedNodes[i].dynamicDurationMs = duration;
+      }
+
+      flattenedNodes.refresh();
+      await Future.delayed(Duration(milliseconds: duration));
       
       if (count > 0) {
         flattenedNodes.removeRange(index + 1, index + 1 + count);
       }
     } else {
-      // Smooth Expand
       node.isExpanded = true;
       List<JsonNode> toAdd = [];
       _getVisibleChildrenRecursive(node, toAdd);
+      
+      int duration = toAdd.length > 100 ? 500 : 300;
+      for (var n in toAdd) {
+        n.dynamicDurationMs = duration;
+      }
+
       if (toAdd.isNotEmpty) {
         flattenedNodes.insertAll(index + 1, toAdd);
       }

@@ -22,11 +22,11 @@ class _JsonTreeItemState extends State<JsonTreeItem> with SingleTickerProviderSt
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300), // Increased duration for smoothness
+      duration: Duration(milliseconds: widget.node.dynamicDurationMs),
     );
     _sizeAnimation = CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeInOutCubic, // More elegant, fluid curve
+      curve: Curves.fastOutSlowIn,
     );
 
     if (widget.node.wasJustAdded) {
@@ -40,6 +40,9 @@ class _JsonTreeItemState extends State<JsonTreeItem> with SingleTickerProviderSt
   @override
   void didUpdateWidget(JsonTreeItem oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Update duration if it changed (e.g. for boro objects)
+    _animationController.duration = Duration(milliseconds: widget.node.dynamicDurationMs);
+
     if (widget.node.isCollapsing) {
       _animationController.reverse();
     }
