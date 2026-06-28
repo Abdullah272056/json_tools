@@ -8,7 +8,6 @@ import '../models/json_node.dart';
 import '../widgets/toolbar.dart';
 import '../widgets/status_bar.dart';
 import '../widgets/json_tree_item.dart';
-import '../utils/responsive.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -20,6 +19,8 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin {
   final controller = Get.put(JsonController());
   late TabController _tabController;
+  final ScrollController _treeHorizontalScrollController = ScrollController();
+  final ScrollController _tableHorizontalScrollController = ScrollController();
 
   @override
   void initState() {
@@ -28,15 +29,19 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
   }
 
   @override
+  void dispose() {
+    _treeHorizontalScrollController.dispose();
+    _tableHorizontalScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
       appBar: AppBar(
-        title:   Text('Piku JSON Viewer',
-        style: TextStyle(
-          fontWeight: FontWeight.w700
-
-        ),
+        title: const Text('Piku JSON Viewer',
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         elevation: 0,
         backgroundColor: Colors.white,
@@ -107,7 +112,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
     ));
   }
 
-  double _viewerSplitRatio = 0.5;
+  double _viewerSplitRatio = 4 / 7;
 
   Widget _buildTreeView() {
     return Obx(() {
@@ -123,34 +128,53 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
 
       return LayoutBuilder(
         builder: (context, constraints) {
+          final double treeWidth = constraints.maxWidth * _viewerSplitRatio;
           return Row(
             children: [
               SizedBox(
-                width: constraints.maxWidth * _viewerSplitRatio,
+                width: treeWidth,
                 child: Container(
                   color: Colors.white,
                   padding: const EdgeInsets.only(top: 8),
-                  child: ListView.builder(
-                    controller: controller.treeScrollController,
-                    itemCount: controller.flattenedNodes.length,
-                    itemBuilder: (context, index) {
-                      return JsonTreeItem(node: controller.flattenedNodes[index]);
-                    },
+                  child: Scrollbar(
+                    controller: _treeHorizontalScrollController,
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      controller: _treeHorizontalScrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(
+                        width: 2000,
+                        child: AnimatedList(
+                          key: controller.treeListKey,
+                          controller: controller.treeScrollController,
+                          initialItemCount: controller.flattenedNodes.length,
+                          itemBuilder: (context, index, animation) {
+                            return SizeTransition(
+                              sizeFactor: animation,
+                              child: JsonTreeItem(node: controller.flattenedNodes[index]),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
-              GestureDetector(
-                onHorizontalDragUpdate: (details) {
-                  setState(() {
-                    _viewerSplitRatio += details.delta.dx / constraints.maxWidth;
-                    _viewerSplitRatio = _viewerSplitRatio.clamp(0.2, 0.8);
-                  });
-                },
-                child: Container(
-                  width: 4,
-                  color: Colors.grey.shade300,
-                  child: const Center(
-                    child: Icon(Icons.drag_indicator, size: 12, color: Colors.grey),
+              MouseRegion(
+                cursor: SystemMouseCursors.resizeLeftRight,
+                child: GestureDetector(
+                  onHorizontalDragUpdate: (details) {
+                    setState(() {
+                      _viewerSplitRatio += details.delta.dx / constraints.maxWidth;
+                      _viewerSplitRatio = _viewerSplitRatio.clamp(0.2, 0.8);
+                    });
+                  },
+                  child: Container(
+                    width: 6,
+                    color: Colors.grey.shade300,
+                    child: const Center(
+                      child: Icon(Icons.drag_indicator, size: 12, color: Colors.grey),
+                    ),
                   ),
                 ),
               ),
@@ -171,97 +195,101 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
         return const Center(child: Text('Select an object or array to view details'));
       }
 
-      // Create a sorted copy of children for the table
       final children = List<JsonNode>.from(node.children);
       children.sort((a, b) => a.key.toString().compareTo(b.key.toString()));
 
       return Container(
         color: Colors.white,
-        child: Column(
-          children: [
-            Container(
-              height: 28,
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade400, width: 1)),
-              ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 250,
-                      height: double.infinity,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE8F0FE), // Light blue for header
-                        border: Border(right: BorderSide(color: Colors.grey.shade400, width: 1)),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      alignment: Alignment.centerLeft,
-                      child: Row(
-                        children: [
-                          const Text('Name', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black)),
-                          const SizedBox(width: 4),
-                          Icon(Icons.arrow_drop_up, size: 14, color: Colors.blue.shade700),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 400,
-                      height: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      alignment: Alignment.centerLeft,
-                      child: const Text('Value', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black)),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: children.length,
-                itemBuilder: (context, index) {
-                  final child = children[index];
-                  return Container(
-                    height: 24,
+        child: Scrollbar(
+          controller: _tableHorizontalScrollController,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _tableHorizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: 650,
+              child: Column(
+                children: [
+                  Container(
+                    height: 28,
                     decoration: BoxDecoration(
-                      border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
+                      border: Border(bottom: BorderSide(color: Colors.grey.shade400, width: 1)),
                     ),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 250, // Fixed width for name column to support scrolling
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                              border: Border(right: BorderSide(color: Colors.grey.shade200, width: 1)),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            alignment: Alignment.centerLeft,
-                            child: SelectableText(
-                              child.key.toString(),
-                              style: const TextStyle(fontSize: 12, fontFamily: 'monospace', color: Colors.black, fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                            ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 250,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F0FE),
+                            border: Border(right: BorderSide(color: Colors.grey.shade400, width: 1)),
                           ),
-                          Container(
-                            width: 400, // Fixed width for value column to support scrolling
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            alignment: Alignment.centerLeft,
-                            child: SelectableText(
-                              child.isExpandable ? '...' : child.value.toString(),
-                              style: const TextStyle(fontSize: 12, fontFamily: 'monospace', color: Colors.black, fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                            ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            children: [
+                              const Text('Name', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black)),
+                              const SizedBox(width: 4),
+                              Icon(Icons.arrow_drop_up, size: 14, color: Colors.blue.shade700),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        Container(
+                          width: 400,
+                          height: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          alignment: Alignment.centerLeft,
+                          child: const Text('Value', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black)),
+                        ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: children.length,
+                      itemBuilder: (context, index) {
+                        final child = children[index];
+                        return Container(
+                          height: 24,
+                          decoration: BoxDecoration(
+                            border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 250,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  border: Border(right: BorderSide(color: Colors.grey.shade200, width: 1)),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                alignment: Alignment.centerLeft,
+                                child: SelectableText(
+                                  child.key.toString(),
+                                  style: const TextStyle(fontSize: 13, fontFamily: 'monospace', color: Colors.black, fontWeight: FontWeight.w600),
+                                  maxLines: 1,
+                                ),
+                              ),
+                              Container(
+                                width: 400,
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                alignment: Alignment.centerLeft,
+                                child: SelectableText(
+                                  child.isExpandable ? '...' : child.value.toString(),
+                                  style: const TextStyle(fontSize: 13, fontFamily: 'monospace', color: Colors.black, fontWeight: FontWeight.w600),
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       );
     });

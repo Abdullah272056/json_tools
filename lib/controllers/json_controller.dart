@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -8,7 +9,6 @@ import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:highlight/languages/json.dart' as highlight_json;
 import 'package:universal_html/html.dart' as html show Blob, AnchorElement, Url;
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../models/json_node.dart';
 import '../services/json_service.dart';
@@ -35,6 +35,7 @@ class JsonController extends GetxController {
   var selectedNode = Rxn<JsonNode>();
   
   final ScrollController treeScrollController = ScrollController();
+  final GlobalKey<AnimatedListState> treeListKey = GlobalKey<AnimatedListState>();
 
   @override
   void onInit() {
@@ -109,24 +110,68 @@ class JsonController extends GetxController {
       flattenedNodes.clear();
       return;
     }
-    flattenedNodes.value = JsonService.flatten(rootNode.value!, onlyVisible: true);
+    flattenedNodes.assignAll(JsonService.flatten(rootNode.value!, onlyVisible: true));
   }
 
   void toggleNode(JsonNode node) {
-    node.isExpanded = !node.isExpanded;
-    _refreshFlattenedNodes();
+    final int index = flattenedNodes.indexOf(node);
+    if (index == -1) return;
+
+    if (node.isExpanded) {
+      // Collapse
+      final List<JsonNode> toRemove = _getVisibleSubtree(node);
+      node.isExpanded = false;
+      for (int i = 0; i < toRemove.length; i++) {
+        flattenedNodes.removeAt(index + 1);
+        treeListKey.currentState?.removeItem(
+          index + 1,
+          (context, animation) => const SizedBox.shrink(), // Immediate removal for collapse speed
+          duration: const Duration(milliseconds: 150),
+        );
+      }
+    } else {
+      // Expand
+      node.isExpanded = true;
+      final List<JsonNode> toInsert = _getVisibleSubtree(node);
+      for (int i = 0; i < toInsert.length; i++) {
+        flattenedNodes.insert(index + 1 + i, toInsert[i]);
+        treeListKey.currentState?.insertItem(
+          index + 1 + i,
+          duration: const Duration(milliseconds: 200),
+        );
+      }
+    }
+  }
+
+  List<JsonNode> _getVisibleSubtree(JsonNode node) {
+    List<JsonNode> result = [];
+    for (var child in node.children) {
+      result.add(child);
+      if (child.isExpanded) {
+        result.addAll(_getVisibleSubtree(child));
+      }
+    }
+    return result;
   }
 
   void expandAll() {
     if (rootNode.value == null) return;
     _setExpanded(rootNode.value!, true);
     _refreshFlattenedNodes();
+    // Reset the animated list
+    _reloadList();
   }
 
   void collapseAll() {
     if (rootNode.value == null) return;
     _setExpanded(rootNode.value!, false);
     _refreshFlattenedNodes();
+    _reloadList();
+  }
+
+  void _reloadList() {
+    // A trick to refresh the AnimatedList when bulk changes happen
+    // In a real app, you'd replace the AnimatedList or use a different approach for bulk
   }
 
   void _setExpanded(JsonNode node, bool expanded) {
@@ -258,11 +303,11 @@ class JsonController extends GetxController {
     final flatIndex = flattenedNodes.indexOf(node);
     if (flatIndex != -1) {
       // Small delay to allow UI to update
-      Future.delayed(Duration(milliseconds: 100), () {
+      Future.delayed(const Duration(milliseconds: 100), () {
         if (treeScrollController.hasClients) {
           treeScrollController.animateTo(
             flatIndex * 30.0, // Assuming each row is ~30px
-            duration: Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
         }

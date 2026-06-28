@@ -38,7 +38,6 @@ class JsonTreeItem extends StatelessWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // Vertical lines for depth
               for (int i = 1; i <= node.depth; i++)
                 Positioned(
                   left: (i * (fontSize * 1.4)) - (node.depth * (fontSize * 1.4)) - (fontSize * 1.2),
@@ -56,21 +55,19 @@ class JsonTreeItem extends StatelessWidget {
                     ),
                   ),
                 ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildExpandIcon(iconSize, controller),
-                    SizedBox(width: fontSize * 0.6),
-                    _buildTypeIcon(fontSize, iconSize),
-                    SizedBox(width: fontSize * 0.8),
-                    _buildKey(fontSize),
-                    if (node.type != JsonNodeType.object && node.type != JsonNodeType.array) ...[
-                      Text(' : ', style: TextStyle(color: Colors.black, fontSize: fontSize, fontWeight: FontWeight.bold)),
-                      _buildValue(fontSize),
-                    ],
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildExpandIcon(iconSize, controller),
+                  SizedBox(width: fontSize * 0.6),
+                  _buildTypeIcon(fontSize, iconSize),
+                  SizedBox(width: fontSize * 0.8),
+                  _buildKey(fontSize),
+                  if (node.type != JsonNodeType.object && node.type != JsonNodeType.array) ...[
+                    Text(' : ', style: TextStyle(color: Colors.black, fontSize: fontSize, fontWeight: FontWeight.bold)),
+                    _buildValue(fontSize),
                   ],
-                ),
+                ],
               ),
             ],
           ),
@@ -94,10 +91,15 @@ class JsonTreeItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(1),
         ),
         child: Center(
-          child: Icon(
-            node.isExpanded ? Icons.remove : Icons.add,
-            size: size - 2.5,
-            color: Colors.black,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 150),
+            transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+            child: Icon(
+              node.isExpanded ? Icons.remove : Icons.add,
+              key: ValueKey(node.isExpanded),
+              size: size - 2.5,
+              color: Colors.black,
+            ),
           ),
         ),
       ),
