@@ -56,18 +56,21 @@ class JsonTreeItem extends StatelessWidget {
                     ),
                   ),
                 ),
-              Row(
-                children: [
-                  _buildExpandIcon(iconSize, controller),
-                  SizedBox(width: fontSize * 0.6),
-                  _buildTypeIcon(fontSize, iconSize),
-                  SizedBox(width: fontSize * 0.8),
-                  _buildKey(fontSize),
-                  if (node.type != JsonNodeType.object && node.type != JsonNodeType.array) ...[
-                    Text(' : ', style: TextStyle(color: Colors.black, fontSize: fontSize, fontWeight: FontWeight.bold)),
-                    _buildValue(fontSize),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildExpandIcon(iconSize, controller),
+                    SizedBox(width: fontSize * 0.6),
+                    _buildTypeIcon(fontSize, iconSize),
+                    SizedBox(width: fontSize * 0.8),
+                    _buildKey(fontSize),
+                    if (node.type != JsonNodeType.object && node.type != JsonNodeType.array) ...[
+                      Text(' : ', style: TextStyle(color: Colors.black, fontSize: fontSize, fontWeight: FontWeight.bold)),
+                      _buildValue(fontSize),
+                    ],
                   ],
-                ],
+                ),
               ),
             ],
           ),
@@ -165,16 +168,13 @@ class JsonTreeItem extends StatelessWidget {
       displayValue = 'null';
     }
 
-    return Flexible(
-      child: Text(
-        displayValue,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: fontSize,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'monospace',
-        ),
+    return Text(
+      displayValue,
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: fontSize,
+        fontWeight: FontWeight.bold,
+        fontFamily: 'monospace',
       ),
     );
   }

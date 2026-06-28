@@ -22,7 +22,7 @@ class JsonController extends GetxController {
   var flattenedNodes = <JsonNode>[].obs;
   
   var isLoading = false.obs;
-  var isDarkMode = true.obs;
+  var isDarkMode = false.obs;
   
   var totalKeys = 0.obs;
   var totalNodes = 0.obs;

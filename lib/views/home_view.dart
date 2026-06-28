@@ -32,7 +32,12 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
       appBar: AppBar(
-        title: const Text('JSON Viewer'),
+        title:   Text('Piku JSON Viewer',
+        style: TextStyle(
+          fontWeight: FontWeight.w700
+
+        ),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -179,10 +184,12 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
               decoration: BoxDecoration(
                 border: Border(bottom: BorderSide(color: Colors.grey.shade400, width: 1)),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 250,
                       height: double.infinity,
                       decoration: BoxDecoration(
                         color: const Color(0xFFE8F0FE), // Light blue for header
@@ -198,16 +205,15 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                         ],
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: Container(
+                    Container(
+                      width: 400,
                       height: double.infinity,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       alignment: Alignment.centerLeft,
                       child: const Text('Value', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black)),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             Expanded(
@@ -220,10 +226,12 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                     decoration: BoxDecoration(
                       border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 250, // Fixed width for name column to support scrolling
                             height: double.infinity,
                             decoration: BoxDecoration(
                               border: Border(right: BorderSide(color: Colors.grey.shade200, width: 1)),
@@ -236,9 +244,8 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                               maxLines: 1,
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: Container(
+                          Container(
+                            width: 400, // Fixed width for value column to support scrolling
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             alignment: Alignment.centerLeft,
                             child: SelectableText(
@@ -247,8 +254,8 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                               maxLines: 1,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },
