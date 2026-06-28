@@ -22,11 +22,11 @@ class _JsonTreeItemState extends State<JsonTreeItem> with SingleTickerProviderSt
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 150),
+      duration: const Duration(milliseconds: 300), // Increased duration for smoothness
     );
     _sizeAnimation = CurvedAnimation(
       parent: _animationController,
-      curve: Curves.fastOutSlowIn, // Smoother, more natural curve
+      curve: Curves.easeInOutCubic, // More elegant, fluid curve
     );
 
     if (widget.node.wasJustAdded) {

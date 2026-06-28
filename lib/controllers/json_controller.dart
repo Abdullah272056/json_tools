@@ -133,7 +133,7 @@ class JsonController extends GetxController {
       flattenedNodes.refresh(); // Trigger animation in items
       
       // Wait for animation to finish before removing from list
-      await Future.delayed(const Duration(milliseconds: 150));
+      await Future.delayed(const Duration(milliseconds: 300));
       
       if (count > 0) {
         flattenedNodes.removeRange(index + 1, index + 1 + count);
