@@ -129,8 +129,8 @@ class JsonController extends GetxController {
         }
       }
       
-      // Dynamic duration for boro objects
-      int duration = count > 100 ? 500 : 300;
+      // Proportional duration: Base 200ms + 5ms per item, capped at 800ms
+      int duration = (200 + (count * 5)).clamp(200, 800);
       for (int i = index + 1; i <= index + count; i++) {
         flattenedNodes[i].dynamicDurationMs = duration;
       }
@@ -146,7 +146,8 @@ class JsonController extends GetxController {
       List<JsonNode> toAdd = [];
       _getVisibleChildrenRecursive(node, toAdd);
       
-      int duration = toAdd.length > 100 ? 500 : 300;
+      // Proportional duration: Base 200ms + 5ms per item, capped at 800ms
+      int duration = (200 + (toAdd.length * 5)).clamp(200, 800);
       for (var n in toAdd) {
         n.dynamicDurationMs = duration;
       }
