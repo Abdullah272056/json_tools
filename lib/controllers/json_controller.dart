@@ -32,6 +32,7 @@ class JsonController extends GetxController {
   var searchQuery = ''.obs;
   var searchResults = <JsonNode>[].obs;
   var currentSearchIndex = (-1).obs;
+  var selectedNode = Rxn<JsonNode>();
   
   final ScrollController treeScrollController = ScrollController();
 
@@ -45,6 +46,10 @@ class JsonController extends GetxController {
     codeController.addListener(() {
       _handleJsonChange(codeController.text);
     });
+  }
+
+  void selectNode(JsonNode node) {
+    selectedNode.value = node;
   }
 
   void _handleJsonChange(String value) {

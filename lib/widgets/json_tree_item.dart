@@ -19,15 +19,19 @@ class JsonTreeItem extends StatelessWidget {
           controller.currentSearchIndex.value < controller.searchResults.length &&
           controller.searchResults[controller.currentSearchIndex.value] == node;
 
+      final isSelected = controller.selectedNode.value == node;
+
       final fontSize = controller.treeFontSize.value;
-      final iconSize = fontSize * 0.75; // Middle ground between 0.7 and 0.8
+      final iconSize = fontSize * 0.75;
       final rowHeight = fontSize * 1.7;
 
       return InkWell(
-        onTap: node.isExpandable ? () => controller.toggleNode(node) : null,
+        onTap: () => controller.selectNode(node),
         child: Container(
           decoration: BoxDecoration(
-            color: isCurrentMatch ? Colors.blue.withOpacity(0.1) : null,
+            color: isSelected 
+                ? Colors.blue.withOpacity(0.2) 
+                : (isCurrentMatch ? Colors.blue.withOpacity(0.1) : null),
           ),
           padding: EdgeInsets.only(left: (node.depth * (fontSize * 1.4)) + 8.0),
           height: rowHeight,
@@ -54,7 +58,7 @@ class JsonTreeItem extends StatelessWidget {
                 ),
               Row(
                 children: [
-                  _buildExpandIcon(iconSize),
+                  _buildExpandIcon(iconSize, controller),
                   SizedBox(width: fontSize * 0.6),
                   _buildTypeIcon(fontSize, iconSize),
                   SizedBox(width: fontSize * 0.8),
@@ -72,23 +76,26 @@ class JsonTreeItem extends StatelessWidget {
     });
   }
 
-  Widget _buildExpandIcon(double size) {
+  Widget _buildExpandIcon(double size, JsonController controller) {
     if (!node.isExpandable) {
       return SizedBox(width: size + 1);
     }
-    return Container(
-      width: size + 1,
-      height: size + 1,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black, width: 1.2),
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(1),
-      ),
-      child: Center(
-        child: Icon(
-          node.isExpanded ? Icons.remove : Icons.add,
-          size: size - 2.5,
-          color: Colors.black,
+    return InkWell(
+      onTap: () => controller.toggleNode(node),
+      child: Container(
+        width: size + 1,
+        height: size + 1,
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black, width: 1.2),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(1),
+        ),
+        child: Center(
+          child: Icon(
+            node.isExpanded ? Icons.remove : Icons.add,
+            size: size - 2.5,
+            color: Colors.black,
+          ),
         ),
       ),
     );
