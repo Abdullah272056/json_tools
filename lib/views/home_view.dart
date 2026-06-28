@@ -4,6 +4,7 @@ import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:flutter_highlight/themes/monokai-sublime.dart';
 import 'package:flutter_highlight/themes/github.dart';
 import '../controllers/json_controller.dart';
+import '../models/json_node.dart';
 import '../widgets/toolbar.dart';
 import '../widgets/status_bar.dart';
 import '../widgets/json_tree_item.dart';
@@ -165,7 +166,9 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
         return const Center(child: Text('Select an object or array to view details'));
       }
 
-      final children = node.children;
+      // Create a sorted copy of children for the table
+      final children = List<JsonNode>.from(node.children);
+      children.sort((a, b) => a.key.toString().compareTo(b.key.toString()));
 
       return Container(
         color: Colors.white,

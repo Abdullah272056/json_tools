@@ -49,7 +49,13 @@ class JsonController extends GetxController {
   }
 
   void selectNode(JsonNode node) {
-    selectedNode.value = node;
+    if (node.isExpandable) {
+      selectedNode.value = node;
+    } else if (node.parent != null) {
+      selectedNode.value = node.parent;
+    } else {
+      selectedNode.value = node;
+    }
   }
 
   void _handleJsonChange(String value) {
