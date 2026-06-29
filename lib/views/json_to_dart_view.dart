@@ -192,17 +192,13 @@ class JsonToDartView extends GetView<JsonToDartController> {
                         CodeField(
                           controller: controller.jsonController,
                           focusNode: controller.focusNode,
-                          textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 14),
+                          textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 14, fontWeight: FontWeight.bold),
                           expands: true, 
                           wrap: false,
-                          lineNumberStyle: const LineNumberStyle(
-                            width: 45, 
-                            textAlign: TextAlign.right,
-                          ),
                         ),
                         Obx(() => controller.jsonInputText.value.isEmpty
                             ? Positioned(
-                                left: 55,
+                                left: 48,
                                 top: 12,
                                 child: Text(
                                   'Paste your JSON here to convert to Dart...',
