@@ -11,7 +11,7 @@ class IndexView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('JSON Tools', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('PIKU JSON TOOLS', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.white,
