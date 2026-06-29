@@ -8,6 +8,8 @@ import '../models/json_node.dart';
 import '../widgets/toolbar.dart';
 import '../widgets/status_bar.dart';
 import '../widgets/json_tree_item.dart';
+import 'json_to_dart_view.dart';
+import '../generated/json_to_dart_binding.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -40,6 +42,11 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.code),
+            tooltip: 'JSON to Dart',
+            onPressed: () => Get.to(() => const JsonToDartView(), binding: JsonToDartBinding()),
+          ),
           Obx(() => IconButton(
             icon: Icon(controller.isDarkMode.value ? Icons.light_mode : Icons.dark_mode),
             onPressed: controller.toggleTheme,

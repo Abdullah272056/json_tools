@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'views/home_view.dart';
+import 'views/json_to_dart_view.dart';
+import 'generated/json_to_dart_binding.dart';
 import 'utils/app_theme.dart';
 
 void main() {
@@ -19,6 +21,13 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       home: const HomeView(),
+      getPages: [
+        GetPage(
+          name: '/JsonToDartView',
+          page: () => const JsonToDartView(),
+          binding: JsonToDartBinding(),
+        ),
+      ],
     );
   }
 }
