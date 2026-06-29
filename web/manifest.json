@@ -1,11 +1,11 @@
 {
-    "name": "json_viewer",
-    "short_name": "json_viewer",
+    "name": "PIKU JSON TOOLS",
+    "short_name": "PIKU JSON",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#2196F3",
+    "description": "View and explore your JSON data or convert it to Dart models.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
