@@ -201,7 +201,7 @@ class JsonToDartView extends GetView<JsonToDartController> {
                                 left: 48,
                                 top: 12,
                                 child: Text(
-                                  'Paste your JSON here to convert to Dart...',
+                                  'Paste JSON here to generate Dart model classes...',
                                   style: TextStyle(
                                     color: Colors.grey.withOpacity(0.5),
                                     fontFamily: 'monospace',

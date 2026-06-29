@@ -125,7 +125,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                       left: 48,
                       top: 12,
                       child: Text(
-                        'Paste your JSON here...',
+                        'Paste or type JSON here to format and explore...',
                         style: TextStyle(
                           color: Colors.grey.withOpacity(0.5),
                           fontFamily: 'monospace',
