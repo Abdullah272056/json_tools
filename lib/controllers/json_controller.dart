@@ -27,7 +27,7 @@ class JsonController extends GetxController {
   var totalNodes = 0.obs;
   var jsonSize = '0 KB'.obs;
   var treeFontSize = 13.0.obs;
-  var currentTabIndex = 0.obs;
+  var currentTabIndex = 1.obs;
 
   var searchQuery = ''.obs;
   var searchResults = <JsonNode>[].obs;
