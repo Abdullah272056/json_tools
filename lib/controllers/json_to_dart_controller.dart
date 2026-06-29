@@ -31,6 +31,10 @@ class JsonToDartController extends GetxController {
   final splitRatio = 0.5.obs; // Default to 50-50 split
   final _jsonText = ''.obs;
 
+  final jsonHorizontalScrollController = ScrollController();
+  final dartHorizontalScrollController = ScrollController();
+  final dartVerticalScrollController = ScrollController();
+
   @override
   void onInit() {
     super.onInit();

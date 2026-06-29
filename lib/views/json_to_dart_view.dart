@@ -11,7 +11,7 @@ import '../controllers/json_controller.dart';
 class JsonToDartView extends GetView<JsonToDartController> {
   const JsonToDartView({super.key});
 
-  @override
+  @override 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -173,14 +173,26 @@ class JsonToDartView extends GetView<JsonToDartController> {
             ),
             child: Obx(() => CodeTheme(
               data: CodeThemeData(styles: themeController.isDarkMode.value ? monokaiSublimeTheme : githubTheme),
-              child: CodeField(
-                controller: controller.jsonController,
-                textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 14),
-                expands: true,
-                wrap: false,
-                lineNumberStyle: const LineNumberStyle(
-                  width: 45,
-                  textAlign: TextAlign.right,
+              child: Scrollbar(
+                controller: controller.jsonHorizontalScrollController,
+                thumbVisibility: true, 
+                notificationPredicate: (notif) => notif.depth == 0,
+                child: SingleChildScrollView(
+                  controller: controller.jsonHorizontalScrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: 2000, // Large width for horizontal scrolling
+                    child: CodeField(
+                      controller: controller.jsonController,
+                      textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 14),
+                      expands: true, 
+                      wrap: false,
+                      lineNumberStyle: const LineNumberStyle(
+                        width: 45, 
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             )),
@@ -269,17 +281,38 @@ class JsonToDartView extends GetView<JsonToDartController> {
                   ),
                 );
               }
-
+ 
               final theme = isDark ? monokaiSublimeTheme : githubTheme;
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: SelectableText.rich(
-                  _formatCode(code, theme),
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 15,
-                    height: 1.5,
+              return SelectionArea(
+                child: Scrollbar(
+                  controller: controller.dartHorizontalScrollController,
+                  notificationPredicate: (notif) => notif.depth == 1,
+                  child: Scrollbar(
+                    controller: controller.dartVerticalScrollController,
+                    notificationPredicate: (notif) => notif.depth == 0,
+                    child: SingleChildScrollView(
+                      controller: controller.dartVerticalScrollController,
+                      child: SingleChildScrollView(
+                        controller: controller.dartHorizontalScrollController,
+                        scrollDirection: Axis.horizontal,
+                        child: IntrinsicWidth(
+                          child: Padding( 
+                            padding: const EdgeInsets.all(16),
+                            child: Text.rich(
+                              _formatCode(code, theme),
+                              softWrap: false,
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               );
