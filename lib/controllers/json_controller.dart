@@ -22,7 +22,6 @@ class JsonController extends GetxController {
   var flattenedNodes = <JsonNode>[].obs;
   
   var isLoading = false.obs;
-  var isDarkMode = false.obs;
   
   var totalKeys = 0.obs;
   var totalNodes = 0.obs;
@@ -338,11 +337,6 @@ class JsonController extends GetxController {
     if (searchResults.isEmpty) return;
     currentSearchIndex.value = (currentSearchIndex.value - 1 + searchResults.length) % searchResults.length;
     _jumpToSearchResult(currentSearchIndex.value);
-  }
-
-  void toggleTheme() {
-    isDarkMode.value = !isDarkMode.value;
-    Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
   }
 
   void updateFontSize(double delta) {

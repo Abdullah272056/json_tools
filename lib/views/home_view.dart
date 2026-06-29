@@ -4,6 +4,7 @@ import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:flutter_highlight/themes/monokai-sublime.dart';
 import 'package:flutter_highlight/themes/github.dart';
 import '../controllers/json_controller.dart';
+import '../controllers/theme_controller.dart';
 import '../models/json_node.dart';
 import '../widgets/toolbar.dart';
 import '../widgets/status_bar.dart';
@@ -20,6 +21,7 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin {
   final controller = Get.put(JsonController());
+  final themeController = Get.find<ThemeController>();
   final ScrollController _treeHorizontalScrollController = ScrollController();
   final ScrollController _tableHorizontalScrollController = ScrollController();
 
@@ -35,6 +37,11 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.home_rounded),
+          onPressed: () => Get.offAllNamed('/'),
+          tooltip: 'Back to Home',
+        ),
         title: const Text('Piku JSON Viewer',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
@@ -42,14 +49,9 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.code),
-            tooltip: 'JSON to Dart',
-            onPressed: () => Get.to(() => const JsonToDartView(), binding: JsonToDartBinding()),
-          ),
           Obx(() => IconButton(
-            icon: Icon(controller.isDarkMode.value ? Icons.light_mode : Icons.dark_mode),
-            onPressed: controller.toggleTheme,
+            icon: Icon(themeController.isDarkMode.value ? Icons.light_mode : Icons.dark_mode),
+            onPressed: themeController.toggleTheme,
           )),
         ],
       ),
@@ -108,7 +110,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
       key: const ValueKey('EditorView'),
       color: Colors.white,
       child: CodeTheme(
-        data: CodeThemeData(styles: controller.isDarkMode.value ? monokaiSublimeTheme : githubTheme),
+        data: CodeThemeData(styles: themeController.isDarkMode.value ? monokaiSublimeTheme : githubTheme),
         child: SingleChildScrollView(
           child: CodeField(
             controller: controller.codeController,

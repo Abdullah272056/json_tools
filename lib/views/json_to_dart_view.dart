@@ -6,7 +6,7 @@ import 'package:flutter_highlight/themes/github.dart';
 import 'package:highlight/highlight.dart' show highlight;
 import 'package:highlight/src/node.dart' as hi;
 import '../controllers/json_to_dart_controller.dart';
-import '../controllers/json_controller.dart';
+import '../controllers/theme_controller.dart';
 
 class JsonToDartView extends GetView<JsonToDartController> {
   const JsonToDartView({super.key});
@@ -15,6 +15,11 @@ class JsonToDartView extends GetView<JsonToDartController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.home_rounded),
+          onPressed: () => Get.offAllNamed('/'),
+          tooltip: 'Back to Home',
+        ),
         title: const Text('JSON to Dart Converter'),
         actions: [
           IconButton(
@@ -107,7 +112,7 @@ class JsonToDartView extends GetView<JsonToDartController> {
   }
 
   Widget _buildJsonInputPanel() {
-    final themeController = Get.find<JsonController>();
+    final themeController = Get.find<ThemeController>();
     return Column(
       children: [
         Padding(
@@ -233,7 +238,7 @@ class JsonToDartView extends GetView<JsonToDartController> {
   }
 
   Widget _buildDartOutputPanel() {
-    final themeController = Get.find<JsonController>();
+    final themeController = Get.find<ThemeController>();
     return Column(
       children: [
         Container(
