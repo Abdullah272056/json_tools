@@ -96923,7 +96923,7 @@ s=A.iA(o.f,!0,t.cR)
 B.b.dz(s,new A.awA())
 p=p.r
 r=t.p
-return A.bZ(q,A.Ez(A.pc(A.f3(A.hb(A.b([A.bZ(q,A.dE(A.b([A.bZ(B.dG,A.dE(A.b([B.YA,B.m7,A.ms(B.It,B.dU,q,q,14)],r),B.I,B.G,B.ai,0),B.n,q,q,new A.cN(B.FT,q,new A.d1(B.m,new A.aU(B.d3,1,B.r,-1),B.m,B.m),q,q,q,B.a9),1/0,q,q,B.bL,250),A.bZ(B.dG,B.YF,B.n,q,q,q,1/0,q,q,B.bL,400)],r),B.I,B.G,B.ai,0),B.n,q,q,new A.cN(q,q,new A.d1(B.m,B.m,new A.aU(B.d3,1,B.r,-1),B.m),q,q,q,B.a9),28,q,q,q,q),A.eV(A.aMA(q,new A.awB(s),s.length),1,q)],r),B.I,B.G,B.ai,B.al),q,650),p,B.N,q,q,B.Z),p,q,!0),B.n,B.k,q,q,q,q,q,q,q)},
+return A.bZ(q,A.Ez(A.pc(A.f3(A.hb(A.b([A.bZ(q,A.dE(A.b([A.bZ(B.dG,A.dE(A.b([B.YA,B.m7,A.ms(B.It,B.dU,q,q,14)],r),B.I,B.G,B.ai,0),B.n,q,q,new A.cN(B.FT,q,new A.d1(B.m,new A.aU(B.d3,1,B.r,-1),B.m,B.m),q,q,q,B.a9),1/0,q,q,B.bL,250),A.bZ(B.dG,B.YG,B.n,q,q,q,1/0,q,q,B.bL,400)],r),B.I,B.G,B.ai,0),B.n,q,q,new A.cN(q,q,new A.d1(B.m,B.m,new A.aU(B.d3,1,B.r,-1),B.m),q,q,q,B.a9),28,q,q,q,q),A.eV(A.aMA(q,new A.awB(s),s.length),1,q)],r),B.I,B.G,B.ai,B.al),q,650),p,B.N,q,q,B.Z),p,q,!0),B.n,B.k,q,q,q,q,q,q,q)},
 $S:59}
 A.awA.prototype={
 $2(a,b){return B.c.b9(J.d_(a.a),J.d_(b.a))},
@@ -96952,7 +96952,7 @@ this.ce()
 this.h7()}}
 A.vV.prototype={
 I(a){var s=null
-return A.aHv(A.aFY(s,B.k,!0,0,B.l,s,B.YJ),s,A.bZ(s,A.k1(new A.fb(B.D9,A.w6(new A.aec(this)),s),s,s),B.n,B.nX,s,s,s,s,s,B.HR,s))},
+return A.aHv(A.aFY(s,B.k,!0,0,B.l,s,B.YE),s,A.bZ(s,A.k1(new A.fb(B.D9,A.w6(new A.aec(this)),s),s,s),B.n,B.nX,s,s,s,s,s,B.HR,s))},
 y7(a,b,c,d,e){var s=null,r=A.jZ(16),q=A.jZ(16),p=A.aj(B.d.aF(25.5),a.v()>>>16&255,a.v()>>>8&255,a.v()&255)
 return new A.MF(4,new A.dr(r,B.m),A.l9(!1,q,!0,new A.cC(B.HS,A.hb(A.b([A.bZ(s,A.ms(c,a,s,s,48),B.n,s,s,new A.cN(p,s,s,s,s,s,B.jA),s,s,s,B.kd,s),B.AK,A.cF(e,s,s,s,s,B.Wq,s,s),B.T1,A.cF(b,s,s,s,s,A.dJ(s,s,B.dT,s,s,s,s,s,s,s,s,14,s,s,s,s,s,!0,s,s,s,s,s,s,s,s),B.fN,s)],t.p),B.I,B.G,B.aB,B.al),s),s,!0,s,s,s,s,s,s,s,s,s,d,s,s,s,s,s),s)}}
 A.aec.prototype={
@@ -97323,7 +97323,7 @@ I(a){var s=this,r=null
 return A.aHQ(A.aOg(A.ms(s.c,r,r,r,18),A.cF(s.d,r,r,r,r,B.BB,r,r),s.e,A.ar3(r,r,r,r,r,r,r,r,r,r,r,r,B.ov,r,r,r,r,r,r,r)),s.f)}}
 A.Uv.prototype={
 I(a){var s=null,r=new A.ks(B.fP,$.ak())
-return new A.LV(B.YL,A.TV(s,r,s,B.Jd,!0,s,!1,s,1,s,s,!1,s,B.f6,s,s,s,s),A.b([A.ar2(B.YD,s,new A.asl(),s),new A.qM(!1,new A.asm(r),s,s,s,s,s,s,!1,s,!0,s,B.YI,s)],t.p),s)}}
+return new A.LV(B.YL,A.TV(s,r,s,B.Jd,!0,s,!1,s,1,s,s,!1,s,B.f6,s,s,s,s),A.b([A.ar2(B.YD,s,new A.asl(),s),new A.qM(!1,new A.asm(r),s,s,s,s,s,s,!1,s,!0,s,B.YJ,s)],t.p),s)}}
 A.asl.prototype={
 $0(){return A.aLO($.bg(),null)},
 $S:0}
@@ -102985,8 +102985,8 @@ B.Ev=new A.MD(1,"viewport")
 B.cC=new A.qo(3,"experimentalWebParagraph")
 B.Ez=new A.uW(null,null,null,null,null,null,null)
 B.EA=new A.Ag(null,null,null,null,null,null)
-B.YH=new A.dI("Enter valid JSON to see the tree view",null,null,null,null,null,null,null,null,null)
-B.EB=new A.h9(B.S,null,null,B.YH,null)
+B.YI=new A.dI("Enter valid JSON to see the tree view",null,null,null,null,null,null,null,null,null)
+B.EB=new A.h9(B.S,null,null,B.YI,null)
 B.a1w=new A.asX(0,"material")
 B.EK=new A.v_(null,null,null,null,null,null,null,null)
 B.EC=new A.h9(B.S,null,null,B.EK,null)
@@ -103678,9 +103678,9 @@ B.L2=s([0.41233895,0.35762064,0.18051042],t.t)
 B.KO=s([0.2126,0.7152,0.0722],t.t)
 B.M6=s([0.01932141,0.11916382,0.95034478],t.t)
 B.db=s([B.L2,B.KO,B.M6],t.zg)
-B.YG=new A.dI("Aa",null,null,null,null,null,null,null,null,null)
+B.YH=new A.dI("Aa",null,null,null,null,null,null,null,null,null)
 B.YM=new A.dI(".*",null,null,null,null,null,null,null,null,null)
-B.Kx=s([B.YG,B.YM],t.p)
+B.Kx=s([B.YH,B.YM],t.p)
 B.pw=s([0,4,12,1,5,13,3,7,15],t.Y)
 B.Kz=s([65533],t.Y)
 B.a0a=new A.i4(0,1)
@@ -104949,8 +104949,8 @@ B.YQ=new A.dI("Minify JSON",null,null,null,null,null,null,null,null,null)
 B.Q6=new A.ta("minify",B.YQ,null,t.wI)
 B.YO=new A.dI("Paste From Clipboard",null,null,null,null,null,null,null,null,null)
 B.Q7=new A.ta("paste",B.YO,null,t.wI)
-B.YE=new A.dI("Beautify JSON",null,null,null,null,null,null,null,null,null)
-B.Q8=new A.ta("beautify",B.YE,null,t.wI)
+B.YF=new A.dI("Beautify JSON",null,null,null,null,null,null,null,null,null)
+B.Q8=new A.ta("beautify",B.YF,null,t.wI)
 B.Q9=new A.wG(null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.Iq=new A.P0(null)
 B.Qa=new A.mT(0,0,0,0,null,null,B.Iq,null)
@@ -105673,9 +105673,9 @@ B.Bq=new A.t(!0,B.l,null,null,null,null,12,B.ag,null,null,null,null,null,null,nu
 B.YA=new A.dI("Name",null,B.Bq,null,null,null,null,null,null,null)
 B.YC=new A.dI("JSON to Dart Converter",null,null,null,null,null,null,null,null,null)
 B.YD=new A.dI("Cancel",null,null,null,null,null,null,null,null,null)
-B.YF=new A.dI("Value",null,B.Bq,null,null,null,null,null,null,null)
-B.YI=new A.dI("Load",null,null,null,null,null,null,null,null,null)
-B.YJ=new A.dI("JSON Tools",null,B.et,null,null,null,null,null,null,null)
+B.YE=new A.dI("PIKU JSON TOOLS",null,B.et,null,null,null,null,null,null,null)
+B.YG=new A.dI("Value",null,B.Bq,null,null,null,null,null,null,null)
+B.YJ=new A.dI("Load",null,null,null,null,null,null,null,null,null)
 B.Yd=new A.t(!0,null,null,null,null,null,14,B.aE,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.YK=new A.dI("Generated Dart Code:",null,B.Yd,null,null,null,null,null,null,null)
 B.YL=new A.dI("Load JSON from URL",null,null,null,null,null,null,null,null,null)
