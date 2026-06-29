@@ -187,15 +187,34 @@ class JsonToDartView extends GetView<JsonToDartController> {
                   scrollDirection: Axis.horizontal,
                   child: SizedBox(
                     width: 2000, // Large width for horizontal scrolling
-                    child: CodeField(
-                      controller: controller.jsonController,
-                      textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 14),
-                      expands: true, 
-                      wrap: false,
-                      lineNumberStyle: const LineNumberStyle(
-                        width: 45, 
-                        textAlign: TextAlign.right,
-                      ),
+                    child: Stack(
+                      children: [
+                        CodeField(
+                          controller: controller.jsonController,
+                          focusNode: controller.focusNode,
+                          textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 14),
+                          expands: true, 
+                          wrap: false,
+                          lineNumberStyle: const LineNumberStyle(
+                            width: 45, 
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                        Obx(() => controller.jsonInputText.value.isEmpty
+                            ? Positioned(
+                                left: 55,
+                                top: 12,
+                                child: Text(
+                                  'Paste your JSON here to convert to Dart...',
+                                  style: TextStyle(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    fontFamily: 'monospace',
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink()),
+                      ],
                     ),
                   ),
                 ),

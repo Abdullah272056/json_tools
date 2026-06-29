@@ -11,6 +11,7 @@ import '../services/dart_generator_service.dart';
 
 class JsonToDartController extends GetxController {
   late CodeController jsonController;
+  final focusNode = FocusNode();
   // late CodeController dartController;
 
   final dartController = CodeController().obs;
@@ -29,7 +30,7 @@ class JsonToDartController extends GetxController {
   final validationError = Rxn<String>();
   final isGenerating = false.obs;
   final splitRatio = 0.5.obs; // Default to 50-50 split
-  final _jsonText = ''.obs;
+  final jsonInputText = ''.obs;
 
   final jsonHorizontalScrollController = ScrollController();
   final dartHorizontalScrollController = ScrollController();
@@ -50,8 +51,8 @@ class JsonToDartController extends GetxController {
     mainClassController = TextEditingController(text: mainClassName.value);
 
     jsonController.addListener(() {
-      if (_jsonText.value != jsonController.text) {
-        _jsonText.value = jsonController.text;
+      if (jsonInputText.value != jsonController.text) {
+        jsonInputText.value = jsonController.text;
       }
     });
 
@@ -61,7 +62,7 @@ class JsonToDartController extends GetxController {
 
     // Auto-generate Dart code whenever:
     // - JSON changes (debounced)
-    debounce(_jsonText, (_) => generateDartCode(), time: const Duration(milliseconds: 500));
+    debounce(jsonInputText, (_) => generateDartCode(), time: const Duration(milliseconds: 500));
     
     // - Main Class Name changes (ever)
     ever(mainClassName, (_) => generateDartCode());
@@ -78,8 +79,17 @@ class JsonToDartController extends GetxController {
   }
 
   @override
+  void onReady() {
+    super.onReady();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      focusNode.requestFocus();
+    });
+  }
+
+  @override
   void onClose() {
     jsonController.dispose();
+    focusNode.dispose();
     dartController.value.dispose();
     mainClassController.dispose();
     super.onClose();

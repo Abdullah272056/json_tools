@@ -15,6 +15,7 @@ import '../services/json_service.dart';
 
 class JsonController extends GetxController {
   late CodeController codeController;
+  final focusNode = FocusNode();
 
   var jsonOutput = ''.obs;
   var validationError = Rxn<Map<String, dynamic>>();
@@ -37,6 +38,16 @@ class JsonController extends GetxController {
   final ScrollController treeScrollController = ScrollController();
 
   @override
+  void onReady() {
+    super.onReady();
+    if (currentTabIndex.value == 1) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        focusNode.requestFocus();
+      });
+    }
+  }
+
+  @override
   void onInit() {
     super.onInit();
     codeController = CodeController(
@@ -46,6 +57,21 @@ class JsonController extends GetxController {
     codeController.addListener(() {
       _handleJsonChange(codeController.text);
     });
+
+    ever(currentTabIndex, (index) {
+      if (index == 1) {
+        Future.delayed(const Duration(milliseconds: 100), () {
+          focusNode.requestFocus();
+        });
+      }
+    });
+  }
+
+  @override
+  void onClose() {
+    focusNode.dispose();
+    treeScrollController.dispose();
+    super.onClose();
   }
 
   void selectNode(JsonNode node) {

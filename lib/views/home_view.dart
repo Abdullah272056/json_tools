@@ -112,10 +112,29 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
       child: CodeTheme(
         data: CodeThemeData(styles: themeController.isDarkMode.value ? monokaiSublimeTheme : githubTheme),
         child: SingleChildScrollView(
-          child: CodeField(
-            controller: controller.codeController,
-            textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 14, fontWeight: FontWeight.bold),
-            minLines: 40,
+          child: Stack(
+            children: [
+              CodeField(
+                controller: controller.codeController,
+                focusNode: controller.focusNode,
+                textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 14, fontWeight: FontWeight.bold),
+                minLines: 40,
+              ),
+              Obx(() => controller.jsonOutput.value.isEmpty
+                  ? Positioned(
+                      left: 48,
+                      top: 12,
+                      child: Text(
+                        'Paste your JSON here...',
+                        style: TextStyle(
+                          color: Colors.grey.withOpacity(0.5),
+                          fontFamily: 'monospace',
+                          fontSize: 14,
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink()),
+            ],
           ),
         ),
       ),
