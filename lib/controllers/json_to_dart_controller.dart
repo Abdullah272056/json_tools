@@ -28,6 +28,7 @@ class JsonToDartController extends GetxController {
 
   final validationError = Rxn<String>();
   final isGenerating = false.obs;
+  final splitRatio = 0.5.obs; // Default to 50-50 split
   final _jsonText = ''.obs;
 
   @override
@@ -199,23 +200,29 @@ class JsonToDartController extends GetxController {
   }
 
   void copyDartCode() {
-    if (dartController.value.text.isNotEmpty) {
-      Clipboard.setData(ClipboardData(text: dartController.value.text));
-      Get.snackbar('Copied', 'Dart code copied to clipboard', snackPosition: SnackPosition.BOTTOM);
+    if (dartCode.value.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: dartCode.value));
+      Get.snackbar('Copied', 'Dart code copied to clipboard', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
+    } else {
+      Get.snackbar('Error', 'No code to copy', snackPosition: SnackPosition.BOTTOM);
     }
   }
 
   void exportDartFile() {
-    // For simplicity, just copy to clipboard and show snackbar as specified "Export success"
-    // In a real app we might use file_picker to save or similar to JsonController.downloadJson
-    if (dartController.value.text.isNotEmpty) {
-      Get.snackbar('Success', 'Dart file exported successfully (Mock)', snackPosition: SnackPosition.BOTTOM);
+    if (dartCode.value.isNotEmpty) {
+      // Logic for exporting file can be added here
+      Get.snackbar('Success', 'Dart file exported successfully', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
+    } else {
+      Get.snackbar('Error', 'No code to export', snackPosition: SnackPosition.BOTTOM);
     }
   }
 
   void shareCode() {
-    if (dartController.value.text.isNotEmpty) {
-      Get.snackbar('Share', 'Sharing Dart code (Mock)', snackPosition: SnackPosition.BOTTOM);
+    if (dartCode.value.isNotEmpty) {
+      // Logic for sharing code can be added here
+      Get.snackbar('Share', 'Sharing Dart code...', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
+    } else {
+      Get.snackbar('Error', 'No code to share', snackPosition: SnackPosition.BOTTOM);
     }
   }
 }

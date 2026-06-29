@@ -65,13 +65,12 @@ class DartGeneratorService {
       fields[fieldName] = fieldType;
       originalKeys[fieldName] = key;
 
-      // Add to queue for later generation
       if (value is Map) {
         queue.add(_PendingClass(fieldType, Map<String, dynamic>.from(value)));
       } else if (value is List && value.isNotEmpty) {
         final first = value.first;
         if (first is Map) {
-          final innerType = _toPascalCase(_singularize(key));
+          final innerType = _toPascalCase(key);
           queue.add(_PendingClass(innerType, Map<String, dynamic>.from(first)));
         }
       }
@@ -88,24 +87,19 @@ class DartGeneratorService {
     fields.forEach((name, type) {
       final fieldType = options.generateNullableFields ? '$type?' : type;
       final prefix = options.generateFinalFields ? 'final ' : '';
-      final latePrefix = (!options.generateNullableFields && !options.generateFinalFields) ? 'late ' : '';
-
       if (options.usePrivateFields) {
-        sb.writeln('  $prefix$latePrefix$fieldType _$name;');
+        sb.writeln('  $prefix$fieldType _$name;');
       } else {
-        sb.writeln('  $prefix$latePrefix$fieldType $name;');
+        sb.writeln('  $prefix$fieldType $name;');
       }
     });
 
-    // Getters and Setters for Private Fields
+    // Getters for Private Fields
     if (options.usePrivateFields) {
       sb.writeln();
       fields.forEach((name, type) {
         final fieldType = options.generateNullableFields ? '$type?' : type;
         sb.writeln('  $fieldType get $name => _$name;');
-        if (!options.generateFinalFields) {
-          sb.writeln('  set $name($fieldType value) => _$name = value;');
-        }
       });
     }
 
@@ -113,94 +107,93 @@ class DartGeneratorService {
 
     // Constructor
     final constPrefix = options.generateConstConstructor ? 'const ' : '';
-    sb.writeln('  $constPrefix$className({');
+    sb.write('  $constPrefix$className({');
     int count = 0;
     fields.forEach((name, type) {
-      final fieldType = options.generateNullableFields ? '$type?' : type;
-      final isRequired = !options.generateNullableFields;
-      final requiredPrefix = isRequired ? 'required ' : '';
-      
-      if (options.usePrivateFields) {
-        sb.write('    $requiredPrefix$fieldType $name');
-      } else {
-        sb.write('    ${requiredPrefix}this.$name');
-      }
-      
-      if (++count < fields.length) sb.writeln(',');
+      final paramPrefix = options.usePrivateFields ? 'this._' : 'this.';
+      sb.write('$paramPrefix$name');
+      if (++count < fields.length) sb.write(', ');
     });
-    sb.write('\n  })');
-
-    if (options.usePrivateFields) {
-      sb.write(' : ');
-      int initCount = 0;
-      fields.forEach((name, type) {
-        sb.write('_$name = $name');
-        if (++initCount < fields.length) sb.write(', ');
-      });
-    }
-    sb.writeln(';');
+    sb.writeln('});');
 
     sb.writeln();
 
-    // fromJson (using factory for compatibility with final fields)
-    sb.writeln('  factory $className.fromJson(Map<String, dynamic> json) {');
-    fields.forEach((name, type) {
-      final key = originalKeys[name];
-      final fieldType = options.generateNullableFields ? '$type?' : type;
-      
-      if (type.startsWith('List<')) {
-        final innerType = type.substring(5, type.length - 1);
-        sb.writeln('    $fieldType $name;');
-        if (['String', 'int', 'double', 'bool', 'dynamic', 'Null'].contains(innerType)) {
-          sb.writeln("    $name = json['$key']?.cast<$innerType>();");
+    // fromJson
+    if (options.generateFinalFields) {
+      sb.writeln('  $className.fromJson(Map<String, dynamic> json)');
+      int initCount = 0;
+      fields.forEach((name, type) {
+        final key = originalKeys[name];
+        final fieldName = options.usePrivateFields ? '_$name' : name;
+        final separator = initCount == 0 ? '      : ' : '        ';
+        
+        if (type.startsWith('List<')) {
+          final innerType = type.substring(5, type.length - 1);
+          if (['String', 'int', 'double', 'bool', 'dynamic', 'Null'].contains(innerType)) {
+             sb.write("$separator$fieldName = json['$key']?.cast<$innerType>()");
+          } else {
+             sb.write("$separator$fieldName = json['$key'] != null ? (json['$key'] as List).map((i) => $innerType.fromJson(i)).toList() : null");
+          }
+        } else if (!['String', 'int', 'double', 'bool', 'dynamic', 'Null'].contains(type)) {
+          sb.write("$separator$fieldName = json['$key'] != null ? new $type.fromJson(json['$key']) : null");
         } else {
-          sb.writeln("    if (json['$key'] != null) {");
-          sb.writeln("      $name = <$innerType>[];");
-          sb.writeln("      json['$key'].forEach((v) {");
-          sb.writeln("        $name!.add($innerType.fromJson(v));");
-          sb.writeln("      });");
-          sb.writeln("    } else {");
-          sb.writeln("      $name = null;");
-          sb.writeln("    }");
+          sb.write("$separator$fieldName = json['$key']");
         }
-      } else if (!['String', 'int', 'double', 'bool', 'dynamic', 'Null'].contains(type)) {
-        sb.writeln("    final $name = json['$key'] != null ? $type.fromJson(json['$key']) : null;");
-      } else {
-        sb.writeln("    final $name = json['$key'];");
-      }
-    });
-
-    sb.writeln('    return $className(');
-    fields.forEach((name, type) {
-      sb.writeln('      $name: $name,');
-    });
-    sb.writeln('    );');
-    sb.writeln('  }');
+        
+        if (++initCount < fields.length) sb.writeln(',');
+      });
+      sb.writeln(';');
+    } else {
+      sb.writeln('  $className.fromJson(Map<String, dynamic> json) {');
+      fields.forEach((name, type) {
+        final key = originalKeys[name];
+        final fieldName = options.usePrivateFields ? '_$name' : name;
+        
+        if (type.startsWith('List<')) {
+          final innerType = type.substring(5, type.length - 1);
+          sb.writeln("    if (json['$key'] != null) {");
+          sb.writeln("      $fieldName = <$innerType>[];");
+          sb.writeln("      json['$key'].forEach((v) {");
+          if (['String', 'int', 'double', 'bool', 'dynamic', 'Null'].contains(innerType)) {
+            sb.writeln("        $fieldName!.add(v);");
+          } else {
+            sb.writeln("        $fieldName!.add(new $innerType.fromJson(v));");
+          }
+          sb.writeln("      });");
+          sb.writeln("    }");
+        } else if (!['String', 'int', 'double', 'bool', 'dynamic', 'Null'].contains(type)) {
+          sb.writeln("    $fieldName = json['$key'] != null ? new $type.fromJson(json['$key']) : null;");
+        } else {
+          sb.writeln("    $fieldName = json['$key'];");
+        }
+      });
+      sb.writeln('  }');
+    }
 
     sb.writeln();
 
     // toJson
     sb.writeln('  Map<String, dynamic> toJson() {');
-    sb.writeln('    final Map<String, dynamic> data = <String, dynamic>{};');
+    sb.writeln('    final Map<String, dynamic> data = new Map<String, dynamic>();');
     fields.forEach((name, type) {
       final key = originalKeys[name];
-      final source = name; // Always use the public name (getter or field)
+      final fieldName = options.usePrivateFields ? '_$name' : name;
       
       if (type.startsWith('List<')) {
         final innerType = type.substring(5, type.length - 1);
         if (['String', 'int', 'double', 'bool', 'dynamic', 'Null'].contains(innerType)) {
-          sb.writeln("    data['$key'] = this.$source;");
+          sb.writeln("    data['$key'] = this.$fieldName;");
         } else {
-          sb.writeln("    if (this.$source != null) {");
-          sb.writeln("      data['$key'] = this.$source!.map((v) => v.toJson()).toList();");
+          sb.writeln("    if (this.$fieldName != null) {");
+          sb.writeln("      data['$key'] = this.$fieldName!.map((v) => v.toJson()).toList();");
           sb.writeln("    }");
         }
       } else if (!['String', 'int', 'double', 'bool', 'dynamic', 'Null'].contains(type)) {
-        sb.writeln("    if (this.$source != null) {");
-        sb.writeln("      data['$key'] = this.$source!.toJson();");
+        sb.writeln("    if (this.$fieldName != null) {");
+        sb.writeln("      data['$key'] = this.$fieldName!.toJson();");
         sb.writeln("    }");
       } else {
-        sb.writeln("    data['$key'] = this.$source;");
+        sb.writeln("    data['$key'] = this.$fieldName;");
       }
     });
     sb.writeln('    return data;');
@@ -215,10 +208,13 @@ class DartGeneratorService {
       });
       sb.writeln('  }) {');
       sb.writeln('    return $className(');
+      int cpCount = 0;
       fields.forEach((name, type) {
-        sb.writeln('      $name: $name ?? this.$name,');
+        final paramName = options.usePrivateFields ? '_$name' : name;
+        sb.write('      $name: $name ?? this.$paramName');
+        if (++cpCount < fields.length) sb.writeln(',');
       });
-      sb.writeln('    );');
+      sb.writeln('\n    );');
       sb.writeln('  }');
     }
 
@@ -228,7 +224,8 @@ class DartGeneratorService {
       sb.writeln('  @override');
       sb.writeln('  List<Object?> get props => [');
       fields.forEach((name, type) {
-        sb.writeln('    $name,');
+        final fieldName = options.usePrivateFields ? '_$name' : name;
+        sb.writeln('    $fieldName,');
       });
       sb.writeln('  ];');
     }
@@ -238,7 +235,7 @@ class DartGeneratorService {
   }
 
   String _detectType(String key, dynamic value) {
-    if (value == null) return 'Null';
+    if (value == null) return 'dynamic';
     if (value is String) return 'String';
     if (value is int) return 'int';
     if (value is double) return 'double';
@@ -248,7 +245,7 @@ class DartGeneratorService {
       if (value.isEmpty) return 'List<dynamic>';
       final first = value.first;
       if (first is Map) {
-        return 'List<${_toPascalCase(_singularize(key))}>';
+        return 'List<${_toPascalCase(key)}>';
       }
       return 'List<${_detectType(key, first)}>';
     }
@@ -272,20 +269,11 @@ class DartGeneratorService {
   }
 
   List<String> _splitIntoWords(String text) {
-    // Replace non-alphanumeric characters with spaces
     String sanitized = text.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ');
-    // Insert space before uppercase letters that follow a lowercase letter
     sanitized = sanitized.replaceAllMapped(
       RegExp(r'([a-z])([A-Z])'), 
       (match) => '${match.group(1)} ${match.group(2)}'
     );
     return sanitized.split(' ').where((w) => w.isNotEmpty).toList();
-  }
-
-  String _singularize(String text) {
-    if (text.length > 1 && text.endsWith('s')) {
-      return text.substring(0, text.length - 1);
-    }
-    return text;
   }
 }

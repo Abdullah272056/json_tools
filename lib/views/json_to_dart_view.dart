@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
-import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:flutter_highlight/themes/monokai-sublime.dart';
 import 'package:flutter_highlight/themes/github.dart';
+import 'package:highlight/highlight.dart' show highlight;
+import 'package:highlight/src/node.dart' as hi;
 import '../controllers/json_to_dart_controller.dart';
 import '../controllers/json_controller.dart';
 
@@ -12,10 +13,6 @@ class JsonToDartView extends GetView<JsonToDartController> {
 
   @override
   Widget build(BuildContext context) {
-    // We can't use Get.find if we are not using named routes with bindings or Get.put before.
-    // Assuming this view will be pushed with Get.to(JsonToDartView(), binding: JsonToDartBinding())
-    // or defined in a route.
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('JSON to Dart Converter'),
@@ -45,18 +42,41 @@ class JsonToDartView extends GetView<JsonToDartController> {
   }
 
   Widget _buildDesktopLayout() {
-    return Row(
-      children: [
-        Expanded(
-          flex: 1,
-          child: _buildJsonInputPanel(),
-        ),
-        const VerticalDivider(width: 1),
-        Expanded(
-          flex: 1,
-          child: _buildDartOutputPanel(),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Obx(() {
+          final double leftWidth = constraints.maxWidth * controller.splitRatio.value;
+          
+          return Row(
+            children: [
+              SizedBox(
+                width: leftWidth,
+                child: _buildJsonInputPanel(),
+              ),
+              MouseRegion(
+                cursor: SystemMouseCursors.resizeLeftRight,
+                child: GestureDetector(
+                  onHorizontalDragUpdate: (details) {
+                    double delta = details.delta.dx / constraints.maxWidth;
+                    double newRatio = controller.splitRatio.value + delta;
+                    controller.splitRatio.value = newRatio.clamp(0.2, 0.8);
+                  },
+                  child: Container(
+                    width: 8,
+                    color: Colors.grey.shade200,
+                    child: const Center(
+                      child: Icon(Icons.drag_indicator, size: 14, color: Colors.grey),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: _buildDartOutputPanel(),
+              ),
+            ],
+          );
+        });
+      },
     );
   }
 
@@ -108,11 +128,21 @@ class JsonToDartView extends GetView<JsonToDartController> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Obx(() => ElevatedButton(
+                  Obx(() => ElevatedButton.icon(
                     onPressed: controller.isGenerating.value ? null : () => controller.generateDartCode(showSnackbar: true),
-                    child: controller.isGenerating.value 
-                      ? const SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Generate'),
+                    icon: controller.isGenerating.value 
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.auto_fix_high, size: 18),
+                    label: const Text('Generate'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade700,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 2,
+                    ),
                   )),
                   PopupMenuButton<String>(
                     onSelected: (value) {
@@ -133,7 +163,7 @@ class JsonToDartView extends GetView<JsonToDartController> {
               ),
             ],
           ),
-        ),
+        ), 
         Expanded(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -145,7 +175,7 @@ class JsonToDartView extends GetView<JsonToDartController> {
               data: CodeThemeData(styles: themeController.isDarkMode.value ? monokaiSublimeTheme : githubTheme),
               child: CodeField(
                 controller: controller.jsonController,
-                textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 14),
                 expands: true,
                 wrap: false,
                 lineNumberStyle: const LineNumberStyle(
@@ -169,8 +199,23 @@ class JsonToDartView extends GetView<JsonToDartController> {
               ),
             );
           }
-          return const SizedBox(height: 8);
+          return const SizedBox(height: 4);
         }),
+        const Divider(),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [ 
+              _buildOptionSwitch('Generate Nullable Fields', controller.generateNullableFields),
+              _buildOptionSwitch('Use Private Fields', controller.usePrivateFields),
+              _buildOptionSwitch('Generate copyWith()', controller.generateCopyWith),
+              _buildOptionSwitch('Generate Equatable', controller.generateEquatable),
+              _buildOptionSwitch('Generate const Constructor', controller.generateConstConstructor),
+              _buildOptionSwitch('Generate Final Fields', controller.generateFinalFields),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -183,16 +228,32 @@ class JsonToDartView extends GetView<JsonToDartController> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           color: Colors.blueGrey.shade50,
           width: double.infinity,
-          child: const Text(
-            'Generated Dart Code',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          child: Row(
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Generated Dart Code:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              SizedBox(width: 25,),
+              Expanded(child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _buildHeaderButton(Icons.copy, 'Copy', controller.copyDartCode),
+                  const SizedBox(width: 15,),
+                  _buildHeaderButton(Icons.download, 'Export', controller.exportDartFile),
+                  const SizedBox(width: 15,),
+                  _buildHeaderButton(Icons.share, 'Share', controller.shareCode),
+                ],
+              )),
+            ],
           ),
         ),
-
+        const SizedBox(height: 4),
         Expanded(
-          flex: 7,
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 8),
+            width: double.infinity,
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey.shade300),
               color: themeController.isDarkMode.value ? const Color(0xFF1E1E1E) : Colors.white,
@@ -209,15 +270,15 @@ class JsonToDartView extends GetView<JsonToDartController> {
                 );
               }
 
+              final theme = isDark ? monokaiSublimeTheme : githubTheme;
+
               return SingleChildScrollView(
-                child: HighlightView(
-                  code,
-                  language: 'dart',
-                  theme: isDark ? monokaiSublimeTheme : githubTheme,
-                  padding: const EdgeInsets.all(16),
-                  textStyle: const TextStyle(
+                padding: const EdgeInsets.all(16),
+                child: SelectableText.rich(
+                  _formatCode(code, theme),
+                  style: const TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 14,
+                    fontSize: 15,
                     height: 1.5,
                   ),
                 ),
@@ -226,50 +287,62 @@ class JsonToDartView extends GetView<JsonToDartController> {
           ),
         ),
         const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildActionButton(Icons.copy, 'Copy', controller.copyDartCode),
-            _buildActionButton(Icons.download, 'Export', controller.exportDartFile),
-            _buildActionButton(Icons.share, 'Share', controller.shareCode),
-          ],
-        ),
-        const Divider(),
-        Expanded(
-          flex: 3,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              _buildOptionSwitch('Use Private Fields', controller.usePrivateFields),
-              _buildOptionSwitch('Generate copyWith()', controller.generateCopyWith),
-              _buildOptionSwitch('Generate Equatable', controller.generateEquatable),
-              _buildOptionSwitch('Generate const Constructor', controller.generateConstConstructor),
-              _buildOptionSwitch('Generate Final Fields', controller.generateFinalFields),
-              _buildOptionSwitch('Generate Nullable Fields', controller.generateNullableFields),
-            ],
-          ),
-        ),
       ],
     );
   }
 
-  Widget _buildActionButton(IconData icon, String label, VoidCallback onPressed) {
-    return ElevatedButton.icon(
+  TextSpan _formatCode(String code, Map<String, TextStyle> theme) {
+    final result = highlight.parse(code, language: 'dart');
+    return TextSpan(
+      children: _convertNodes(result.nodes!, theme),
+    );
+  }
+
+  List<TextSpan> _convertNodes(List<hi.Node> nodes, Map<String, TextStyle> theme) {
+    List<TextSpan> spans = [];
+    for (var node in nodes) {
+      if (node.value != null) {
+        spans.add(TextSpan(text: node.value, style: theme[node.className]));
+      } else if (node.children != null) {
+        spans.add(TextSpan(
+          children: _convertNodes(node.children!, theme),
+          style: theme[node.className],
+        ));
+      }
+    }
+    return spans;
+  }
+
+  Widget _buildHeaderButton(IconData icon, String label, VoidCallback onPressed) {
+    return TextButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, size: 16),
-      label: Text(label, style: const TextStyle(fontSize: 12)),
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      icon: Icon(icon, size: 18),
+      label: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+      style: TextButton.styleFrom(
+        foregroundColor: Colors.blue.shade800,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
       ),
     );
   }
 
   Widget _buildOptionSwitch(String title, RxBool value) {
-    return Obx(() => SwitchListTile(
-      title: Text(title, style: const TextStyle(fontSize: 13)),
-      value: value.value,
-      onChanged: (v) => value.value = v,
-      dense: true,
+    return Obx(() => Container(
+      height: 30, // Reduced height
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 14)), // Increased to 14
+          Transform.scale(
+            scale: 0.7, // Scaled down switch to fit compact height
+            child: Switch(
+              value: value.value,
+              onChanged: (v) => value.value = v,
+              activeColor: Colors.blue.shade700,
+            ),
+          ),
+        ],
+      ),
     ));
   }
 }
