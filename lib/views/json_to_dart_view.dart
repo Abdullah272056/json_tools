@@ -287,6 +287,7 @@ class JsonToDartView extends GetView<JsonToDartController> {
               return SelectionArea(
                 child: Scrollbar(
                   controller: controller.dartHorizontalScrollController,
+                  thumbVisibility: true,
                   notificationPredicate: (notif) => notif.depth == 1,
                   child: Scrollbar(
                     controller: controller.dartVerticalScrollController,
